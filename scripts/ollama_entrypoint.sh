@@ -18,6 +18,9 @@ MODEL_NAME=$1
 # Start the main Ollama application
 ollama serve &
 
+# Set OLLAMA_HOST for client commands to connect to the server
+export OLLAMA_HOST=http://127.0.0.1:11434
+
 # Wait for the Ollama application to be ready (optional, if necessary)
 while ! ollama ls; do
   echo "Waiting for Ollama service to be ready..."

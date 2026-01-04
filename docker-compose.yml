@@ -112,7 +112,7 @@ services:
       # - LDR_LLM_MODEL=<your-loaded-model-name>
     volumes:
       - ldr_data:/data
-      - ldr_scripts:/scripts
+      - ./scripts:/scripts:ro
       # ============================================================================
       # LOCAL DOCUMENT COLLECTIONS (Optional)
       # Mount your document directories here to search them with LDR.
@@ -146,16 +146,23 @@ services:
     container_name: ollama_service
     entrypoint: "/scripts/ollama_entrypoint.sh ${MODEL:-gemma3:12b}"
     healthcheck:
-      test: [ "CMD", "ollama", "show", "${MODEL:-gemma3:12b}" ]
+      test: [ "CMD", "sh", "-c", "OLLAMA_HOST=http://127.0.0.1:11434 ollama show ${MODEL:-gemma3:12b}" ]
       interval: 10s
       timeout: 5s
       start_period: 10m
       retries: 2
     environment:
       OLLAMA_KEEP_ALIVE: '30m'
+      # Proxy settings for Intel network (both uppercase and lowercase for compatibility)
+      HTTP_PROXY: http://proxy-dmz.intel.com:912
+      HTTPS_PROXY: http://proxy-dmz.intel.com:912
+      NO_PROXY: intel.com,.intel.com,10.0.0.0/8,192.168.0.0/16,localhost,.local,127.0.0.0/8,172.18.0.0/12,134.134.0.0/16,127.0.0.1,*.intel.com,host.docker.internal,*.bj.intel.com,::1
+      http_proxy: http://proxy-dmz.intel.com:912
+      https_proxy: http://proxy-dmz.intel.com:912
+      no_proxy: intel.com,.intel.com,10.0.0.0/8,192.168.0.0/16,localhost,.local,127.0.0.0/8,172.18.0.0/12,134.134.0.0/16,127.0.0.1,*.intel.com,host.docker.internal,*.bj.intel.com,::1
     volumes:
       - ollama_data:/root/.ollama
-      - ldr_scripts:/scripts
+      - ./scripts:/scripts:ro
     networks:
       - ldr-network
 
@@ -165,17 +172,25 @@ services:
   searxng:
     image: searxng/searxng:latest@sha256:6dd0dffc05a75d92bbacd858953b4e93b8f709403c3fb1fb8a33ca8fd02e40a4
     container_name: searxng
+    ports:
+      - "8080:8080"
     networks:
       - ldr-network
-
+    environment:
+      # Proxy settings for Intel network (both uppercase and lowercase for compatibility)
+      HTTP_PROXY: http://proxy-dmz.intel.com:912
+      HTTPS_PROXY: http://proxy-dmz.intel.com:912
+      NO_PROXY: intel.com,.intel.com,10.0.0.0/8,192.168.0.0/16,localhost,.local,127.0.0.0/8,172.18.0.0/12,134.134.0.0/16,127.0.0.1,*.intel.com,host.docker.internal,*.bj.intel.com,::1
+      http_proxy: http://proxy-dmz.intel.com:912
+      https_proxy: http://proxy-dmz.intel.com:912
+      no_proxy: intel.com,.intel.com,10.0.0.0/8,192.168.0.0/16,localhost,.local,127.0.0.0/8,172.18.0.0/12,134.134.0.0/16,127.0.0.1,*.intel.com,host.docker.internal,*.bj.intel.com,::1
     volumes:
-      - searxng_data:/etc/searxng
+      - ./searxng/settings.yml:/etc/searxng/settings.yml
     restart: unless-stopped
 
 
 volumes:
   ldr_data:
-  ldr_scripts:
   ldr_rag_cache:
   ollama_data:
   searxng_data:

@@ -1,0 +1,12 @@
+use_default_settings: true
+
+server:
+  secret_key: "ultrasecretkey_change_this_in_production"
+
+outgoing:
+  request_timeout: 30.0
+  max_request_timeout: 60.0
+  proxies:
+    all://:
+      - http://proxy-dmz.intel.com:912
+  extra_proxy_timeout: 20
